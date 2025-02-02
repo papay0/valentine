@@ -26,12 +26,25 @@ export default function ValentinePage() {
   const mousePositionRef = useRef({ x: 0, y: 0 });
   const isMovingRef = useRef(false);
   const hasReachedButtonRef = useRef(false);
+  const hasTrackedNoAttemptRef = useRef(false);
 
   // Track page visit on mount
   useEffect(() => {
     track("page_view", {
       name: name,
     });
+
+    // Cleanup function to track no_attempts when leaving
+    return () => {
+      if (noCount > 0 && !hasTrackedNoAttemptRef.current && !yesPressed) {
+        track("no_attempt", {
+          name: name,
+          totalAttempts: noCount,
+          finalPhrase: getNoButtonText(),
+        });
+        hasTrackedNoAttemptRef.current = true;
+      }
+    };
   }, [name]);
 
   const getNoButtonText = () => {
@@ -257,15 +270,7 @@ export default function ValentinePage() {
         if (hasReachedButtonRef.current) {
           const now = Date.now();
           if (now - lastMoveTime.current > 400) {
-            setNoCount(prev => {
-              // Track No attempt
-              track("no_attempt", {
-                name: name,
-                attemptNumber: prev + 1,
-                phrase: getNoButtonText(),
-              });
-              return prev + 1;
-            });
+            setNoCount(prev => prev + 1);
             lastMoveTime.current = now;
           }
         }
@@ -279,6 +284,24 @@ export default function ValentinePage() {
     const intervalId = setInterval(checkMouseProximity, 30);
     return () => clearInterval(intervalId);
   }, [position]);
+
+  // Track final no_attempt when clicking Yes
+  const handleYesClick = () => {
+    if (noCount > 0 && !hasTrackedNoAttemptRef.current) {
+      track("no_attempt", {
+        name: name,
+        totalAttempts: noCount,
+        finalPhrase: getNoButtonText(),
+        endedWithYes: true,
+      });
+      hasTrackedNoAttemptRef.current = true;
+    }
+    setYesPressed(true);
+    track("click_yes", {
+      name: name,
+      noCount: noCount,
+    });
+  };
 
   return (
     <div className="min-h-screen w-screen flex flex-col justify-between bg-pink-100 relative overflow-hidden">
@@ -330,13 +353,7 @@ export default function ValentinePage() {
                 <Button
                   variant="default"
                   className="bg-green-500 hover:bg-green-600 text-white text-xl h-12 px-8 relative"
-                  onClick={() => {
-                    setYesPressed(true);
-                    track("click_yes", {
-                      name: name,
-                      noCount: noCount,
-                    });
-                  }}
+                  onClick={handleYesClick}
                 >
                   Yes 🥰
                 </Button>
