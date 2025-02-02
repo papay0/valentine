@@ -315,78 +315,78 @@ export default function ValentinePage() {
   }, [position]);
 
   return (
-    <div className="h-screen w-screen flex flex-col items-center justify-center bg-pink-100 relative">
-      {yesPressed && (
-        <>
+    <div className="min-h-screen w-screen flex flex-col bg-pink-100 relative">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 sm:px-8">
+        {yesPressed && (
           <Confetti
             width={window.innerWidth}
             height={window.innerHeight}
             recycle={false}
             numberOfPieces={1000}
           />
-        </>
-      )}
-      <Card className="w-[90%] max-w-[600px] bg-white/80 backdrop-blur-sm">
-        <CardContent 
-          ref={buttonContainerRef}
-          className="flex flex-col items-center gap-7 p-8 relative min-h-[600px]"
-        >
-          <h1 className="text-4xl font-bold text-gray-800 text-center">
-            {yesPressed ? `OMG ${displayName}!! 🎉💖` : `Hey ${displayName}, will you be my Valentine?`}
-          </h1>
-          {yesPressed ? (
-            <div className="flex-1 flex flex-col items-center justify-center text-center gap-8">
-              <div className="space-y-6">
-                <p className="text-2xl font-semibold mb-4">I knew you would say yes! 🥰</p>
-                <p className="text-xl text-gray-600">You&apos;ve made me the happiest person, {displayName}! 💝</p>
-                <div className="grid grid-cols-3 gap-6 mt-8">
-                  {["💝", "💘", "💖", "💗", "💓", "💞"].map((heart, idx) => (
-                    <span
-                      key={idx}
-                      className="text-5xl animate-bounce"
-                      style={{ 
-                        animationDelay: `${idx * 0.1}s`,
-                        animationDuration: "1s"
-                      }}
-                    >
-                      {heart}
-                    </span>
-                  ))}
+        )}
+        <Card className="w-full max-w-[600px] bg-white/80 backdrop-blur-sm">
+          <CardContent 
+            ref={buttonContainerRef}
+            className="flex flex-col items-center gap-7 p-6 sm:p-8 relative min-h-[500px] sm:min-h-[600px]"
+          >
+            <h1 className="text-4xl font-bold text-gray-800 text-center">
+              {yesPressed ? `OMG ${displayName}!! 🎉💖` : `Hey ${displayName}, will you be my Valentine?`}
+            </h1>
+            {yesPressed ? (
+              <div className="flex-1 flex flex-col items-center justify-center text-center gap-8">
+                <div className="space-y-6">
+                  <p className="text-2xl font-semibold mb-4">I knew you would say yes! 🥰</p>
+                  <p className="text-xl text-gray-600">You&apos;ve made me the happiest person, {displayName}! 💝</p>
+                  <div className="grid grid-cols-3 gap-6 mt-8">
+                    {["💝", "💘", "💖", "💗", "💓", "💞"].map((heart, idx) => (
+                      <span
+                        key={idx}
+                        className="text-5xl animate-bounce"
+                        style={{ 
+                          animationDelay: `${idx * 0.1}s`,
+                          animationDuration: "1s"
+                        }}
+                      >
+                        {heart}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          ) : (
-            <>
-              <img
-                src="https://gifdb.com/images/high/cute-love-bear-roses-ou7zho5oosxnpo6k.gif"
-                alt="Cute bear with hearts"
-                className="w-[200px] h-[200px] rounded-lg"
-              />
-              <Button
-                variant="default"
-                className="bg-green-500 hover:bg-green-600 text-white text-xl h-12 px-8 z-10"
-                onClick={() => setYesPressed(true)}
-              >
-                Yes 🥰
-              </Button>
-              <Button
-                ref={noButtonRef}
-                variant="default"
-                className="bg-red-500 hover:bg-red-600 text-white text-xl h-12 px-8 absolute"
-                style={{
-                  left: `${position.x}px`,
-                  top: `${position.y}px`,
-                  transition: "all 0.08s ease",
-                  transform: `scale(${noCount > 0 ? 0.95 : 1})`,
-                }}
-              >
-                {getNoButtonText()} 😢
-              </Button>
-            </>
-          )}
-        </CardContent>
-      </Card>
-      <footer className="fixed bottom-4 text-sm text-gray-600/80 font-light">
+            ) : (
+              <>
+                <img
+                  src="https://gifdb.com/images/high/cute-love-bear-roses-ou7zho5oosxnpo6k.gif"
+                  alt="Cute bear with hearts"
+                  className="w-[200px] h-[200px] rounded-lg"
+                />
+                <Button
+                  variant="default"
+                  className="bg-green-500 hover:bg-green-600 text-white text-xl h-12 px-8 z-10"
+                  onClick={() => setYesPressed(true)}
+                >
+                  Yes 🥰
+                </Button>
+                <Button
+                  ref={noButtonRef}
+                  variant="default"
+                  className="bg-red-500 hover:bg-red-600 text-white text-xl h-12 px-8 absolute"
+                  style={{
+                    left: `${position.x}px`,
+                    top: `${position.y}px`,
+                    transition: "all 0.08s ease",
+                    transform: `scale(${noCount > 0 ? 0.95 : 1})`,
+                  }}
+                >
+                  {getNoButtonText()} 😢
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </main>
+      <footer className="w-full text-sm text-gray-600/80 font-light text-center p-4">
         Made with 💝 in San Francisco by{" "}
         <a 
           href="https://www.linkedin.com/in/arthur-papailhau/"
