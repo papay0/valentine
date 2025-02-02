@@ -157,106 +157,55 @@ export default function ValentinePage() {
     const buttonWidth = button.offsetWidth;
     const buttonHeight = button.offsetHeight;
     const padding = 40;
-    const safeZone = 200; // Increased safe zone
 
-    // Get current button position
-    const currentX = position.x;
-    const currentY = position.y;
-
-    // Calculate the center of the container
+    // Define the center zone to avoid (where the Yes button is)
+    const centerZoneWidth = 250;  // Width of center area to avoid
+    const centerZoneHeight = 100; // Height of center area to avoid
     const centerX = containerRect.width / 2;
     const centerY = containerRect.height / 2;
 
-    // Try several positions and pick the farthest one
-    let bestPosition = { x: 0, y: 0 };
-    let maxDistance = 0;
-
-    // Generate more random positions
-    for (let i = 0; i < 30; i++) {
-      let testX, testY;
-
-      // Different movement patterns based on iteration and current position
-      const pattern = Math.floor(Math.random() * 5); // 0-4 random patterns
-
-      switch (pattern) {
-        case 0: // Opposite direction from mouse
-          const angleFromMouse = Math.atan2(mouseY - currentY, mouseX - currentX);
-          const oppositeAngle = angleFromMouse + Math.PI + (Math.random() - 0.5);
-          const radius = Math.random() * Math.min(containerRect.width, containerRect.height) * 0.6;
-          testX = mouseX + Math.cos(oppositeAngle) * radius;
-          testY = mouseY + Math.sin(oppositeAngle) * radius;
-          break;
-
-        case 1: // Random corner or edge
-          testX = Math.random() < 0.5 ? padding : containerRect.width - buttonWidth - padding;
-          testY = Math.random() < 0.5 ? padding : containerRect.height - buttonHeight - padding;
-          if (Math.random() < 0.5) { // Sometimes use middle of edges
-            testX = Math.random() * (containerRect.width - buttonWidth - 2 * padding) + padding;
-          } else {
-            testY = Math.random() * (containerRect.height - buttonHeight - 2 * padding) + padding;
-          }
-          break;
-
-        case 2: // Spiral pattern
-          const spiralAngle = Math.random() * Math.PI * 2;
-          const spiralRadius = Math.random() * Math.min(containerRect.width, containerRect.height) * 0.4;
-          testX = centerX + Math.cos(spiralAngle) * spiralRadius;
-          testY = centerY + Math.sin(spiralAngle) * spiralRadius;
-          break;
-
-        case 3: // Zigzag pattern
-          const zigzagBase = Math.random() < 0.5 ? currentX : currentY;
-          const zigzagAmplitude = Math.min(containerRect.width, containerRect.height) * 0.3;
-          if (Math.random() < 0.5) {
-            testX = zigzagBase + (Math.random() - 0.5) * zigzagAmplitude;
-            testY = Math.random() * (containerRect.height - buttonHeight - 2 * padding) + padding;
-          } else {
-            testX = Math.random() * (containerRect.width - buttonWidth - 2 * padding) + padding;
-            testY = zigzagBase + (Math.random() - 0.5) * zigzagAmplitude;
-          }
-          break;
-
-        default: // Completely random position with minimum distance
-          const randomAngle = Math.random() * Math.PI * 2;
-          const minDistance = Math.min(containerRect.width, containerRect.height) * 0.3;
-          const maxDistance = Math.min(containerRect.width, containerRect.height) * 0.7;
-          const randomRadius = minDistance + Math.random() * (maxDistance - minDistance);
-          testX = mouseX + Math.cos(randomAngle) * randomRadius;
-          testY = mouseY + Math.sin(randomAngle) * randomRadius;
-          break;
+    // Calculate available zones (avoiding the center)
+    const zones = [
+      // Top-left
+      { 
+        x: [padding, centerX - centerZoneWidth/2 - buttonWidth],
+        y: [padding, centerY - centerZoneHeight/2 - buttonHeight]
+      },
+      // Top-right
+      {
+        x: [centerX + centerZoneWidth/2, containerRect.width - buttonWidth - padding],
+        y: [padding, centerY - centerZoneHeight/2 - buttonHeight]
+      },
+      // Bottom-left
+      {
+        x: [padding, centerX - centerZoneWidth/2 - buttonWidth],
+        y: [centerY + centerZoneHeight/2, containerRect.height - buttonHeight - padding]
+      },
+      // Bottom-right
+      {
+        x: [centerX + centerZoneWidth/2, containerRect.width - buttonWidth - padding],
+        y: [centerY + centerZoneHeight/2, containerRect.height - buttonHeight - padding]
       }
+    ];
 
-      // Ensure the position is within bounds
-      testX = Math.min(Math.max(padding, testX), containerRect.width - buttonWidth - padding);
-      testY = Math.min(Math.max(padding, testY), containerRect.height - buttonHeight - padding);
+    // Pick a random zone that's different from the current position
+    let attempts = 0;
+    let newX, newY;
+    do {
+      const zone = zones[Math.floor(Math.random() * zones.length)];
+      newX = Math.random() * (zone.x[1] - zone.x[0]) + zone.x[0];
+      newY = Math.random() * (zone.y[1] - zone.y[0]) + zone.y[0];
+      attempts++;
+    } while (
+      attempts < 10 && 
+      Math.abs(newX - position.x) < 100 && 
+      Math.abs(newY - position.y) < 100
+    );
 
-      // Calculate distance from mouse and current position
-      const distanceFromMouse = getDistance(mouseX, mouseY, testX + buttonWidth / 2, testY + buttonHeight / 2);
-      const distanceFromCurrent = getDistance(currentX, currentY, testX, testY);
-      
-      // Combine both distances to favor positions that are far from both mouse and current position
-      const combinedDistance = distanceFromMouse + distanceFromCurrent * 0.5;
-      
-      if (combinedDistance > maxDistance && distanceFromMouse > safeZone) {
-        maxDistance = combinedDistance;
-        bestPosition = { x: testX, y: testY };
-      }
-    }
-
-    // If we couldn't find a good position, use an emergency evasion
-    if (maxDistance < safeZone) {
-      const emergencyAngle = Math.random() * Math.PI * 2;
-      const emergencyRadius = Math.min(containerRect.width, containerRect.height) * 0.8;
-      let testX = centerX + Math.cos(emergencyAngle) * emergencyRadius;
-      let testY = centerY + Math.sin(emergencyAngle) * emergencyRadius;
-      
-      testX = Math.min(Math.max(padding, testX), containerRect.width - buttonWidth - padding);
-      testY = Math.min(Math.max(padding, testY), containerRect.height - buttonHeight - padding);
-      
-      bestPosition = { x: testX, y: testY };
-    }
-
-    return bestPosition;
+    return { 
+      x: Math.min(Math.max(padding, newX), containerRect.width - buttonWidth - padding),
+      y: Math.min(Math.max(padding, newY), containerRect.height - buttonHeight - padding)
+    };
   };
 
   useEffect(() => {
@@ -363,7 +312,7 @@ export default function ValentinePage() {
                 />
                 <Button
                   variant="default"
-                  className="bg-green-500 hover:bg-green-600 text-white text-xl h-12 px-8 z-10"
+                  className="bg-green-500 hover:bg-green-600 text-white text-xl h-12 px-8 relative"
                   onClick={() => setYesPressed(true)}
                 >
                   Yes 🥰
@@ -371,7 +320,7 @@ export default function ValentinePage() {
                 <Button
                   ref={noButtonRef}
                   variant="default"
-                  className="bg-red-500 hover:bg-red-600 text-white text-xl h-12 px-8 absolute"
+                  className="bg-red-500 hover:bg-red-600 text-white text-xl h-12 px-8 absolute z-50"
                   style={{
                     left: `${position.x}px`,
                     top: `${position.y}px`,
