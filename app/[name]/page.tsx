@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import Confetti from "react-confetti";
 import { useParams } from "next/navigation";
+import { Analytics } from "@vercel/analytics/react";
+import { track } from "@vercel/analytics";
 
 export default function ValentinePage() {
   const [noCount, setNoCount] = useState(0);
@@ -24,6 +26,13 @@ export default function ValentinePage() {
   const mousePositionRef = useRef({ x: 0, y: 0 });
   const isMovingRef = useRef(false);
   const hasReachedButtonRef = useRef(false);
+
+  // Track page visit on mount
+  useEffect(() => {
+    track("page_view", {
+      name: name,
+    });
+  }, [name]);
 
   const getNoButtonText = () => {
     const phrases = [
@@ -248,7 +257,15 @@ export default function ValentinePage() {
         if (hasReachedButtonRef.current) {
           const now = Date.now();
           if (now - lastMoveTime.current > 400) {
-            setNoCount(prev => prev + 1);
+            setNoCount(prev => {
+              // Track No attempt
+              track("no_attempt", {
+                name: name,
+                attemptNumber: prev + 1,
+                phrase: getNoButtonText(),
+              });
+              return prev + 1;
+            });
             lastMoveTime.current = now;
           }
         }
@@ -313,7 +330,13 @@ export default function ValentinePage() {
                 <Button
                   variant="default"
                   className="bg-green-500 hover:bg-green-600 text-white text-xl h-12 px-8 relative"
-                  onClick={() => setYesPressed(true)}
+                  onClick={() => {
+                    setYesPressed(true);
+                    track("click_yes", {
+                      name: name,
+                      noCount: noCount,
+                    });
+                  }}
                 >
                   Yes 🥰
                 </Button>
@@ -346,6 +369,7 @@ export default function ValentinePage() {
           Arthur Papailhau
         </a>
       </footer>
+      <Analytics />
     </div>
   );
 } 
