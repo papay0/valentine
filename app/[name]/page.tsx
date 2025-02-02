@@ -245,7 +245,7 @@ export default function ValentinePage() {
   }, [position]);
 
   return (
-    <div className="h-screen w-screen flex items-center justify-center bg-pink-100">
+    <div className="h-screen w-screen flex flex-col items-center justify-center bg-pink-100 relative">
       {yesPressed && (
         <>
           <Confetti
@@ -310,6 +310,17 @@ export default function ValentinePage() {
           )}
         </CardContent>
       </Card>
+      <footer className="fixed bottom-4 text-sm text-gray-600/80 font-light">
+        Made with 💝 in San Francisco by{" "}
+        <a 
+          href="https://www.linkedin.com/in/arthur-papailhau/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:text-pink-500 transition-colors underline decoration-dotted"
+        >
+          Arthur Papailhau
+        </a>
+      </footer>
     </div>
   );
 } 
