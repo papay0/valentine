@@ -10,7 +10,14 @@ export default function ValentinePage() {
   const [noCount, setNoCount] = useState(0);
   const [yesPressed, setYesPressed] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const { name } = useParams();
+  const params = useParams();
+  const name = decodeURIComponent(params.name as string);
+  // Capitalize first letter of each word
+  const displayName = name
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+
   const buttonContainerRef = useRef<HTMLDivElement>(null);
   const noButtonRef = useRef<HTMLButtonElement>(null);
   const lastMoveTime = useRef(Date.now());
@@ -262,7 +269,7 @@ export default function ValentinePage() {
           className="flex flex-col items-center gap-7 p-8 relative min-h-[400px]"
         >
           <h1 className="text-4xl font-bold text-gray-800 text-center">
-            {yesPressed ? "Yay!! 🎉💖" : `Hey ${name}, will you be my Valentine?`}
+            {yesPressed ? "Yay!! 🎉💖" : `Hey ${displayName}, will you be my Valentine?`}
           </h1>
           {yesPressed ? (
             <div className="text-center">
