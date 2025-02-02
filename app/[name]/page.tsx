@@ -315,8 +315,8 @@ export default function ValentinePage() {
   }, [position]);
 
   return (
-    <div className="min-h-screen w-screen flex flex-col bg-pink-100 relative">
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-8 sm:px-8">
+    <div className="min-h-screen w-screen flex flex-col justify-between bg-pink-100 relative overflow-hidden">
+      <div className="flex-1 flex items-center justify-center px-4 py-4 sm:py-8">
         {yesPressed && (
           <Confetti
             width={window.innerWidth}
@@ -328,7 +328,7 @@ export default function ValentinePage() {
         <Card className="w-full max-w-[600px] bg-white/80 backdrop-blur-sm">
           <CardContent 
             ref={buttonContainerRef}
-            className="flex flex-col items-center gap-7 p-6 sm:p-8 relative min-h-[500px] sm:min-h-[600px]"
+            className="flex flex-col items-center gap-7 p-6 sm:p-8 relative min-h-[450px] sm:min-h-[550px]"
           >
             <h1 className="text-4xl font-bold text-gray-800 text-center">
               {yesPressed ? `OMG ${displayName}!! 🎉💖` : `Hey ${displayName}, will you be my Valentine?`}
@@ -385,8 +385,8 @@ export default function ValentinePage() {
             )}
           </CardContent>
         </Card>
-      </main>
-      <footer className="w-full text-sm text-gray-600/80 font-light text-center p-4">
+      </div>
+      <footer className="w-full text-sm text-gray-600/80 font-light text-center py-2 px-4 bg-pink-100/50 backdrop-blur-sm">
         Made with 💝 in San Francisco by{" "}
         <a 
           href="https://www.linkedin.com/in/arthur-papailhau/"
