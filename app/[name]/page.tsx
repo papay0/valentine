@@ -157,40 +157,103 @@ export default function ValentinePage() {
     const buttonWidth = button.offsetWidth;
     const buttonHeight = button.offsetHeight;
     const padding = 40;
-    const safeZone = 150; // Minimum distance from mouse
+    const safeZone = 200; // Increased safe zone
+
+    // Get current button position
+    const currentX = position.x;
+    const currentY = position.y;
+
+    // Calculate the center of the container
+    const centerX = containerRect.width / 2;
+    const centerY = containerRect.height / 2;
 
     // Try several positions and pick the farthest one
     let bestPosition = { x: 0, y: 0 };
     let maxDistance = 0;
 
-    // Try more positions for better evasion
-    for (let i = 0; i < 15; i++) {
+    // Generate more random positions
+    for (let i = 0; i < 30; i++) {
       let testX, testY;
-      
-      if (i < 4) { // Try corners
-        testX = i % 2 === 0 ? padding : containerRect.width - buttonWidth - padding;
-        testY = i < 2 ? padding : containerRect.height - buttonHeight - padding;
-      } else { // Try random positions across the entire container
-        testX = Math.random() * (containerRect.width - buttonWidth - 2 * padding) + padding;
-        testY = Math.random() * (containerRect.height - buttonHeight - 2 * padding) + padding;
+
+      // Different movement patterns based on iteration and current position
+      const pattern = Math.floor(Math.random() * 5); // 0-4 random patterns
+
+      switch (pattern) {
+        case 0: // Opposite direction from mouse
+          const angleFromMouse = Math.atan2(mouseY - currentY, mouseX - currentX);
+          const oppositeAngle = angleFromMouse + Math.PI + (Math.random() - 0.5);
+          const radius = Math.random() * Math.min(containerRect.width, containerRect.height) * 0.6;
+          testX = mouseX + Math.cos(oppositeAngle) * radius;
+          testY = mouseY + Math.sin(oppositeAngle) * radius;
+          break;
+
+        case 1: // Random corner or edge
+          testX = Math.random() < 0.5 ? padding : containerRect.width - buttonWidth - padding;
+          testY = Math.random() < 0.5 ? padding : containerRect.height - buttonHeight - padding;
+          if (Math.random() < 0.5) { // Sometimes use middle of edges
+            testX = Math.random() * (containerRect.width - buttonWidth - 2 * padding) + padding;
+          } else {
+            testY = Math.random() * (containerRect.height - buttonHeight - 2 * padding) + padding;
+          }
+          break;
+
+        case 2: // Spiral pattern
+          const spiralAngle = Math.random() * Math.PI * 2;
+          const spiralRadius = Math.random() * Math.min(containerRect.width, containerRect.height) * 0.4;
+          testX = centerX + Math.cos(spiralAngle) * spiralRadius;
+          testY = centerY + Math.sin(spiralAngle) * spiralRadius;
+          break;
+
+        case 3: // Zigzag pattern
+          const zigzagBase = Math.random() < 0.5 ? currentX : currentY;
+          const zigzagAmplitude = Math.min(containerRect.width, containerRect.height) * 0.3;
+          if (Math.random() < 0.5) {
+            testX = zigzagBase + (Math.random() - 0.5) * zigzagAmplitude;
+            testY = Math.random() * (containerRect.height - buttonHeight - 2 * padding) + padding;
+          } else {
+            testX = Math.random() * (containerRect.width - buttonWidth - 2 * padding) + padding;
+            testY = zigzagBase + (Math.random() - 0.5) * zigzagAmplitude;
+          }
+          break;
+
+        default: // Completely random position with minimum distance
+          const randomAngle = Math.random() * Math.PI * 2;
+          const minDistance = Math.min(containerRect.width, containerRect.height) * 0.3;
+          const maxDistance = Math.min(containerRect.width, containerRect.height) * 0.7;
+          const randomRadius = minDistance + Math.random() * (maxDistance - minDistance);
+          testX = mouseX + Math.cos(randomAngle) * randomRadius;
+          testY = mouseY + Math.sin(randomAngle) * randomRadius;
+          break;
       }
 
-      const distance = getDistance(mouseX, mouseY, testX + buttonWidth / 2, testY + buttonHeight / 2);
+      // Ensure the position is within bounds
+      testX = Math.min(Math.max(padding, testX), containerRect.width - buttonWidth - padding);
+      testY = Math.min(Math.max(padding, testY), containerRect.height - buttonHeight - padding);
+
+      // Calculate distance from mouse and current position
+      const distanceFromMouse = getDistance(mouseX, mouseY, testX + buttonWidth / 2, testY + buttonHeight / 2);
+      const distanceFromCurrent = getDistance(currentX, currentY, testX, testY);
       
-      if (distance > maxDistance && distance > safeZone) {
-        maxDistance = distance;
+      // Combine both distances to favor positions that are far from both mouse and current position
+      const combinedDistance = distanceFromMouse + distanceFromCurrent * 0.5;
+      
+      if (combinedDistance > maxDistance && distanceFromMouse > safeZone) {
+        maxDistance = combinedDistance;
         bestPosition = { x: testX, y: testY };
       }
     }
 
-    // If we couldn't find a position far enough, use the opposite corner with extra distance
+    // If we couldn't find a good position, use an emergency evasion
     if (maxDistance < safeZone) {
-      bestPosition = {
-        x: mouseX < containerRect.width / 2 ? 
-          containerRect.width - buttonWidth - padding : padding,
-        y: mouseY < containerRect.height / 2 ? 
-          containerRect.height - buttonHeight - padding : padding
-      };
+      const emergencyAngle = Math.random() * Math.PI * 2;
+      const emergencyRadius = Math.min(containerRect.width, containerRect.height) * 0.8;
+      let testX = centerX + Math.cos(emergencyAngle) * emergencyRadius;
+      let testY = centerY + Math.sin(emergencyAngle) * emergencyRadius;
+      
+      testX = Math.min(Math.max(padding, testX), containerRect.width - buttonWidth - padding);
+      testY = Math.min(Math.max(padding, testY), containerRect.height - buttonHeight - padding);
+      
+      bestPosition = { x: testX, y: testY };
     }
 
     return bestPosition;
@@ -266,24 +329,30 @@ export default function ValentinePage() {
       <Card className="w-[90%] max-w-[600px] bg-white/80 backdrop-blur-sm">
         <CardContent 
           ref={buttonContainerRef}
-          className="flex flex-col items-center gap-7 p-8 relative min-h-[400px]"
+          className="flex flex-col items-center gap-7 p-8 relative min-h-[600px]"
         >
           <h1 className="text-4xl font-bold text-gray-800 text-center">
-            {yesPressed ? "Yay!! 🎉💖" : `Hey ${displayName}, will you be my Valentine?`}
+            {yesPressed ? `OMG ${displayName}!! 🎉💖` : `Hey ${displayName}, will you be my Valentine?`}
           </h1>
           {yesPressed ? (
-            <div className="text-center">
-              <p className="text-xl mb-4">I knew you would say yes! 🥰</p>
-              <div className="grid grid-cols-3 gap-4">
-                {["💝", "💘", "💖", "💗", "💓", "💞"].map((heart, idx) => (
-                  <span
-                    key={idx}
-                    className="text-4xl animate-bounce"
-                    style={{ animationDelay: `${idx * 0.1}s` }}
-                  >
-                    {heart}
-                  </span>
-                ))}
+            <div className="flex-1 flex flex-col items-center justify-center text-center gap-8">
+              <div className="space-y-6">
+                <p className="text-2xl font-semibold mb-4">I knew you would say yes! 🥰</p>
+                <p className="text-xl text-gray-600">You&apos;ve made me the happiest person, {displayName}! 💝</p>
+                <div className="grid grid-cols-3 gap-6 mt-8">
+                  {["💝", "💘", "💖", "💗", "💓", "💞"].map((heart, idx) => (
+                    <span
+                      key={idx}
+                      className="text-5xl animate-bounce"
+                      style={{ 
+                        animationDelay: `${idx * 0.1}s`,
+                        animationDuration: "1s"
+                      }}
+                    >
+                      {heart}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           ) : (
